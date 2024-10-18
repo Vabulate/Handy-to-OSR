@@ -1,0 +1,7 @@
+fastapi==0.115.0
+uvicorn==0.30.6
+httpx==0.27.2
+
+mitmproxy==10.4.2
+pyserial==3.5
+pyyaml==6.0.2
