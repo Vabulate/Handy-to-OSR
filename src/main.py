@@ -115,15 +115,17 @@ def handle_set_stroke(query: dict) -> None:
 
     if type_ != "%":  # should be in percentage
         stroke_top /= 2
-        state["stroke"]["bottom"] = 0
-        state["stroke"]["top"] = stroke_top
+    state["stroke"]["bottom"] = 0
+    state["stroke"]["top"] = stroke_top
     set_state("stroke", stroke_top)
 
 
 def handle_slide(body: dict) -> None:
+    print(body)
     state["stroke"]["bottom"] = body.get("min", 0)
-    max_ = body.get("min", 100)
-    set_state("stroke", max_)
+    state["stroke"]["top"] = body.get("max", 100)
+    # max_ = body['max']
+    set_state("stroke", state["stroke"]["top"])
 
 
 def handle_set_speed(query: dict) -> None:
