@@ -130,13 +130,13 @@ def handle_set_speed(query: dict) -> None:
     type_ = get_query_param(query, "type", "mm/s")
     speed = int(query["speed"][0])
     if type_ == "%":
-        speed *= factors["speed_factor"]
+        speed = int(speed*factors["speed_factor"])
 
     set_state("speed", speed)
 
 
 def handle_set_velocity(query: dict) -> None:
-    speed = query["velocity"] * factors["velocity_factor"]
+    speed = int(query["velocity"] * factors["velocity_factor"])
     set_state("speed", speed)
 
 
