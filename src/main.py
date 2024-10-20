@@ -58,6 +58,7 @@ def send_success_response(flow: http.HTTPFlow) -> None:
     elif state["mode"] == "running":
         response["state"] = 2
     response["serverTime"] = int(time.time() * 1000)
+    response["servertime"] = int(time.time() * 1000)
     flow.response = http.Response.make(200, json.dumps(response).encode(), HEADERS)
 
 
@@ -170,6 +171,7 @@ def request(flow: http.HTTPFlow) -> None:
     parsed_url = urlparse(flow.request.url)
 
     action = parsed_url.path.split("/")[-1]
+    # print(parsed_url.path)
     query = parse_qs(parsed_url.query)
     body = {}
     try:
@@ -208,6 +210,12 @@ def request(flow: http.HTTPFlow) -> None:
         pass
     elif action == "state":
         pass
+    elif action == "setup":
+        # wget script
+        # script to tcode
+        print(body)
+    # elif action == "sse":
+    #     print(body)
     else:
 
         print("error!", action)
