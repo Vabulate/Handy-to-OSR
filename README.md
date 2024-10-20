@@ -91,3 +91,5 @@ Now, all the requests that go to the handyfeeling api will be redirected to the 
 6. Setup the game as you want.
 7. Position your self in the device.
 8. Start the game and have fun :)
+
+
