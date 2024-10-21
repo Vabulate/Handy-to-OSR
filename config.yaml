@@ -2,7 +2,7 @@ configs:
   ranges:
     stroke:
       min: 30
-      max: 80
+      max: 85
     surge:
       min: 30
       max: 60
