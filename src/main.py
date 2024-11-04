@@ -10,10 +10,10 @@ from patterns import (
     costumed_stroke_half_twist_costumed_roll_smooth_motion,
     costumed_stroke_half_twist_costumed_surge_smooth_motion,
     midway_full_twist_with_roll,
+    full_stroke_with_roll_motion,
 )
 from configuration import configuration
 from tcode_fire import TcodeFire
-
 
 
 HEADERS = {
@@ -89,17 +89,24 @@ def set_state(key: str, value) -> None:
         if state["speed"] == 0:
             return
         single_move_duration_ms = int(int(distance // (state["speed"] / 1000)))
-        patterns = [
+        descrete_patterns = [
             costumed_stroke_half_twist_costumed_surge_smooth_motion,
             costumed_stroke_half_twist_costumed_roll_smooth_motion,
         ]
-        if 500 < single_move_duration_ms < 1000 :
-            patterns.append(costumed_stroke_half_twist_costumed_roll_fast_down_slow_up)
-            if top - bottom >50:
-                patterns.append(midway_full_twist_with_roll)
+        continuous_patterns = [full_stroke_with_roll_motion]
+        if 500 < single_move_duration_ms < 1000:
+            descrete_patterns.append(costumed_stroke_half_twist_costumed_roll_fast_down_slow_up)
+            if top - bottom > 50:
+                descrete_patterns.append(midway_full_twist_with_roll)
+
         # TODO: buffer strokes
+        cp = random.choice(continuous_patterns)
+        mode = random.choice(['descrete', 'continuous'])
         while total_time_ms < 1000 * 60 * 1.2:
-            pattern = random.choice(patterns)
+            if mode == 'descrete':
+                pattern = random.choice(descrete_patterns)
+            else:
+                pattern = cp
             p = pattern(top, bottom, back, forth, single_move_duration_ms * 2)
             t1.push_instructions(*p)
 
@@ -133,7 +140,7 @@ def handle_set_speed(query: dict) -> None:
     type_ = get_query_param(query, "type", "mm/s")
     speed = int(query["speed"][0])
     if type_ == "%":
-        speed = int(speed*factors["speed_factor"])
+        speed = int(speed * factors["speed_factor"])
 
     set_state("speed", speed)
 

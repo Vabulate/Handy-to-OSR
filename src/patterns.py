@@ -1,5 +1,7 @@
 import random
+from itertools import cycle
 from functools import partial
+
 from configuration import configuration
 from tcode_fire import TcodeInstruction, TcodeLine
 
@@ -141,11 +143,11 @@ def midway_full_twist_with_roll(
     relative_top, relative_bottom, relative_back, relative_forth, total_duration
 ):
     duration_twist_at_middle = 100
-    total_duration = total_duration - duration_twist_at_middle*2
+    total_duration = total_duration - duration_twist_at_middle * 2
 
-    duration_to_middle = total_duration//3
-    duration_bottom = total_duration//3
-    duration_top = total_duration//3
+    duration_to_middle = total_duration // 3
+    duration_bottom = total_duration // 3
+    duration_top = total_duration // 3
 
     top = stroke_absolute_position(relative_top)
     relative_middle = (relative_top + relative_bottom) // 2
@@ -192,3 +194,208 @@ def midway_full_twist_with_roll(
             ]
         ),
     )
+
+
+def full_stroke_with_roll_motion_(
+    relative_top, relative_bottom, relative_back, relative_forth, total_duration
+):
+    lines = []
+    step_duration = total_duration // 9
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(100), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(50), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(50), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(75), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(70), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(70), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(50), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(90), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(90), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(25), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(100), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(100), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(0), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(70), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(70), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(25), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(50), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(50), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(50), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(30), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(30), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(75), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(10), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(10), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(100), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(0), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(0), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(75), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(30), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(30), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(50), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(50), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(50), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(25), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(70), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(70), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(0), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(90), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(90), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(25), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(100), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(100), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(50), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(90), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(90), step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", stroke_absolute_position(75), step_duration),
+                TcodeInstruction("R1", roll_absolute_position(70), step_duration),
+                TcodeInstruction("R0", twist_absolute_position(70), step_duration),
+            ]
+        )
+    )
+    return lines
+
+
+def full_stroke_with_roll_motion(
+    relative_top, relative_bottom, relative_back, relative_forth, total_duration
+):
+    absolute_top = stroke_absolute_position(relative_top)
+    absolute_bottom = stroke_absolute_position(relative_bottom)
+    absolute_back = roll_absolute_position(relative_back)
+    absolute_forth = roll_absolute_position(relative_forth)
+
+    # absolute_middle = abs(absolute_top - absolute_bottom)
+    lines = []
+    step_duration = total_duration // 4
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", absolute_top, step_duration),
+                TcodeInstruction("R1", absolute_back, step_duration),
+                TcodeInstruction("R0", absolute_back, step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", absolute_bottom, step_duration),
+                TcodeInstruction("R1", absolute_back, step_duration),
+                TcodeInstruction("R0", absolute_back, step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", absolute_bottom, step_duration),
+                TcodeInstruction("R1", absolute_forth, step_duration),
+                TcodeInstruction("R0", absolute_forth, step_duration),
+            ]
+        )
+    )
+    lines.append(
+        TcodeLine(
+            [
+                TcodeInstruction("L0", absolute_top, step_duration),
+                TcodeInstruction("R1", absolute_forth, step_duration),
+                TcodeInstruction("R0", absolute_forth, step_duration),
+            ]
+        )
+    )
+    return lines
+if __name__ == "__main__":
+    for a in full_stroke_with_roll_motion(100, 0, 100, 0, 1000):
+        print(a.strip())
