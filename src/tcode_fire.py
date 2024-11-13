@@ -14,7 +14,9 @@ class MockSerial:
         pass
 
     def write(self, encoded_string):
-        print(f"{int(time.monotonic() * 1000)}, {encoded_string.decode('utf-8').strip()}")
+        print(
+            f"{int(time.monotonic() * 1000)}, {encoded_string.decode('utf-8').strip()}"
+        )
 
     def close(self):
         pass
@@ -98,9 +100,13 @@ class TcodeFire(threading.Thread):
     def delay(self, time_ms):
         current_session_id = self._session_id
         end_time_ms = int(time.monotonic() * 1000) + time_ms
-        while int(time.monotonic() * 1000) < end_time_ms and current_session_id == self._session_id:
+        while (
+            int(time.monotonic() * 1000) < end_time_ms
+            and current_session_id == self._session_id
+        ):
             time.sleep(0.01)
             # pass
+
 
     def run(self) -> None:
         while self._mode == "running":
