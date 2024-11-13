@@ -9,7 +9,6 @@ from patterns import (
     costumed_stroke_half_twist_costumed_surge_smooth_motion_generator,
     full_stroke_with_pitch_motion,
     full_stroke_with_roll_motion,
-    tempest_stroke_pitched_stroke,
 )
 from configuration import configuration
 from tcode_fire import TcodeFire

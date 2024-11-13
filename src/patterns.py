@@ -241,3 +241,97 @@ def full_stroke_with_pitch_motion(
                 ),
             ]
         )
+
+
+def long_stroke(
+    relative_top, relative_bottom, relative_back, relative_forth, linear_speed
+):
+    step_size_ms = 50
+
+    # Stroke
+    top = stroke_absolute_position(relative_top)
+    bottom = stroke_absolute_position(relative_bottom)
+    stroke_increment = max([int(step_size_ms * linear_speed), 1])
+    top_to_bottom = list(range(top, bottom - stroke_increment, -1 * stroke_increment))
+    top_to_bottom = cycle(top_to_bottom + list(reversed(top_to_bottom[0:-1])))
+
+    # Surge
+    back = surge_absolute_position(relative_back)
+    forth = surge_absolute_position(relative_forth)
+    surge_increment = max([int(step_size_ms * linear_speed), 1])
+    back_to_forth = list(range(back, forth - surge_increment, -1 * surge_increment))
+    back_to_forth = cycle(back_to_forth + list(reversed(back_to_forth[0:-1])))
+    t = 0
+    while True:
+        t += step_size_ms
+        yield TcodeLine(
+            [
+                TcodeInstruction("L0", next(top_to_bottom), step_size_ms),
+                TcodeInstruction("L1", next(back_to_forth), step_size_ms),
+            ]
+        )
+
+
+def tempest_stroke(bpm, from_, to, phase, ecc):
+    frequency = 50
+    angular_velocity = (2 * math.pi * bpm) / 60
+    scale = 0.5 * abs(to - from_)
+    midpoint = 0.5 * (to + from_)
+    index = count()
+    while True:
+        angle = ((next(index) * angular_velocity) / frequency) + (0.5 * math.pi * phase)
+        yield int(midpoint - scale * math.cos(angle + (ecc * math.sin(angle))))
+
+
+def tempest_stroke_pitched_stroke(relative_top, relative_bottom, linear_speed):
+    step_size_ms = 50
+    top = stroke_absolute_position(relative_top)
+    bottom = stroke_absolute_position(relative_bottom)
+    back = pitch_absolute_position(100)
+    forth = pitch_absolute_position(0)
+    t0 = twist_absolute_position(100)
+    t1 = twist_absolute_position(0)
+    bpm = calculate_bpm(abs(top - bottom), linear_speed) * 4
+    print("BPM = ", bpm)
+    stroke_gen = tempest_stroke(bpm, bottom, top, 0, 0)
+    pitch_gen = tempest_stroke(
+        calculate_bpm(abs(back - forth), linear_speed), back, forth, 1, -0.1
+    )
+    twist_gen = tempest_stroke(bpm, t1, t0, 2, 0.1)
+    yield TcodeLine(
+        [
+            TcodeInstruction("L0", next(stroke_gen), INIT_TIME_DURATION_MS),
+            TcodeInstruction(
+                "R2",
+                next(pitch_gen),
+                INIT_TIME_DURATION_MS,
+            ),
+            TcodeInstruction(
+                "R0",
+                next(twist_gen),
+                INIT_TIME_DURATION_MS,
+            ),
+        ]
+    )
+    while True:
+        yield TcodeLine(
+            [
+                TcodeInstruction("L0", next(stroke_gen), step_size_ms),
+                TcodeInstruction(
+                    "R2",
+                    next(pitch_gen),
+                    step_size_ms,
+                ),
+                TcodeInstruction(
+                    "R0",
+                    next(twist_gen),
+                    step_size_ms,
+                ),
+            ]
+        )
+
+
+if __name__ == "__main__":
+    gen = long_stroke(100, 0, 100, 0, 200 / 1000)
+    for i in range(50):
+        print(next(gen).strip())
