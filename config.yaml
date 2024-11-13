@@ -1,8 +1,8 @@
 configs:
   ranges:
     stroke:
-      min: 15
-      max: 88
+      min: 10
+      max: 80
     surge:
       min: 30
       max: 60
@@ -13,18 +13,18 @@ configs:
       min: 0
       max: 99
     roll:
-      min: 0
-      max: 70
+      min: 20
+      max: 80
     pitch:
-      min: 0
-      max: 70
+      min: 30
+      max: 60
     valve:
       min: 0
       max: 99
   COM:
     port: COM6
     baudrate: 115200
-    debug: true
+    debug: false
   factors:
-    velocity_factor: 3
-    speed_factor: 3
+    velocity_factor: 2.2
+    speed_factor: 2.2

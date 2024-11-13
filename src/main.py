@@ -6,11 +6,10 @@ from mitmproxy import http
 from urllib.parse import urlparse, parse_qs
 
 from patterns import (
-    costumed_stroke_half_twist_costumed_roll_fast_down_slow_up,
-    costumed_stroke_half_twist_costumed_roll_smooth_motion,
-    costumed_stroke_half_twist_costumed_surge_smooth_motion,
-    midway_full_twist_with_roll,
+    costumed_stroke_half_twist_costumed_surge_smooth_motion_generator,
+    full_stroke_with_pitch_motion,
     full_stroke_with_roll_motion,
+    tempest_stroke_pitched_stroke,
 )
 from configuration import configuration
 from tcode_fire import TcodeFire
@@ -89,28 +88,28 @@ def set_state(key: str, value) -> None:
         if state["speed"] == 0:
             return
         single_move_duration_ms = int(int(distance // (state["speed"] / 1000)))
-        descrete_patterns = [
-            costumed_stroke_half_twist_costumed_surge_smooth_motion,
-            costumed_stroke_half_twist_costumed_roll_smooth_motion,
+        patterns = [
+            costumed_stroke_half_twist_costumed_surge_smooth_motion_generator(
+                top, bottom, back, forth, single_move_duration_ms * 2
+            ),
+            full_stroke_with_roll_motion(
+                top, bottom, back, forth, state["speed"] / 1000
+            ),
+            full_stroke_with_pitch_motion(
+                top, bottom, back, forth, state["speed"] / 1000
+            ),
+            # tempest_stroke_pitched_stroke(
+            #     top, bottom, back, forth, state["speed"]
+            # ),
         ]
-        continuous_patterns = [full_stroke_with_roll_motion]
-        if 500 < single_move_duration_ms < 1000:
-            descrete_patterns.append(costumed_stroke_half_twist_costumed_roll_fast_down_slow_up)
-            if top - bottom > 50:
-                descrete_patterns.append(midway_full_twist_with_roll)
 
         # TODO: buffer strokes
-        cp = random.choice(continuous_patterns)
-        mode = random.choice(['descrete', 'continuous'])
+        pattern = random.choice(patterns)
         while total_time_ms < 1000 * 60 * 1.2:
-            if mode == 'descrete':
-                pattern = random.choice(descrete_patterns)
-            else:
-                pattern = cp
-            p = pattern(top, bottom, back, forth, single_move_duration_ms * 2)
-            t1.push_instructions(*p)
+            p = next(pattern)
+            t1.push_instruction(p)
 
-            total_time_ms += single_move_duration_ms * 2
+            total_time_ms += p.duration_ms
 
 
 def get_query_param(query: dict, key: str, default: str) -> str:

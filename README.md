@@ -52,7 +52,7 @@ It will parse the request and set it's state accordingly, and according to the s
 
 ## How to run
 
-### Window
+### Windows:
 
 #### Run the servers:
 1. Open a command prompt in the project directory.
