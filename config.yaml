@@ -24,7 +24,7 @@ configs:
   COM:
     port: COM6
     baudrate: 115200
-    debug: false
+    debug: true
   factors:
     velocity_factor: 2.2
     speed_factor: 2.2
