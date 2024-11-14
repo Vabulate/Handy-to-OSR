@@ -26,5 +26,5 @@ configs:
     baudrate: 115200
     debug: true
   factors:
-    velocity_factor: 2.2
-    speed_factor: 2.2
+    velocity_factor: 2.3
+    speed_factor: 2.3
