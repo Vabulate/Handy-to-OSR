@@ -288,12 +288,78 @@ def long_stroke_1(
                 TcodeInstruction("L1", next(back_to_forth), duration),
                 TcodeInstruction(
                     "R1",
-                    get_orbital_position(angular_speed_roll * t, roll_back, roll_forth, 1.5, -0.1),
+                    get_orbital_position(
+                        angular_speed_roll * t, roll_back, roll_forth, 1.5, -0.1
+                    ),
                     duration,
                 ),
                 TcodeInstruction(
                     "R2",
-                    get_orbital_position(angular_speed_pitch * t, pitch_back, pitch_forth, 1, -0.1),
+                    get_orbital_position(
+                        angular_speed_pitch * t, pitch_back, pitch_forth, 1, -0.1
+                    ),
+                    duration,
+                ),
+            ]
+        )
+        duration = step_size_ms
+
+
+def long_stroke_2(
+    relative_top, relative_bottom, relative_back, relative_forth, linear_speed
+):
+    step_size_ms = 50
+
+    # Stroke
+    top = stroke_absolute_position(relative_top)
+    bottom = stroke_absolute_position(relative_bottom)
+    stroke_increment = max([int(step_size_ms * linear_speed), 1])
+    top_to_bottom = list(range(top, bottom - stroke_increment, -1 * stroke_increment))
+    stroke_size = len(top_to_bottom)
+    top_to_bottom = cycle(top_to_bottom + list(reversed(top_to_bottom[0:-1])))
+
+    # Surge
+    back = surge_absolute_position(relative_back)
+    forth = surge_absolute_position(relative_forth)
+    surge_increment = int(
+        stroke_increment * ((abs(back - forth) // stroke_increment + 1) / stroke_size)
+    )
+    surge_increment = max([surge_increment, 1])
+    # print(back, )
+    back_to_forth = list(range(forth, back - surge_increment, -1 * surge_increment))
+    back_to_forth = cycle(back_to_forth + list(reversed(back_to_forth[0:-1])))
+
+    # pitch
+    pitch_back = pitch_absolute_position(100)
+    pitch_forth = pitch_absolute_position(0)
+
+    angular_speed_pitch = calculate_angular_velocity(abs(top - bottom), linear_speed)
+
+    # roll
+    roll_back = roll_absolute_position(100)
+    roll_forth = roll_absolute_position(0)
+
+    angular_speed_roll = calculate_angular_velocity(abs(top - bottom), linear_speed)
+    t = 0
+    duration = INIT_TIME_DURATION_MS
+    while True:
+        t += step_size_ms
+        yield TcodeLine(
+            [
+                TcodeInstruction("L0", next(top_to_bottom), duration),
+                TcodeInstruction("L1", next(back_to_forth), duration),
+                TcodeInstruction(
+                    "R1",
+                    get_orbital_position(
+                        angular_speed_roll * t, roll_back, roll_forth, 1, -0.5
+                    ),
+                    duration,
+                ),
+                TcodeInstruction(
+                    "R2",
+                    get_orbital_position(
+                        angular_speed_pitch * t, pitch_back, pitch_forth, -1, -0.8
+                    ),
                     duration,
                 ),
             ]
@@ -302,7 +368,7 @@ def long_stroke_1(
 
 
 if __name__ == "__main__":
-    gen = long_stroke_1(100, 0, 0, 100, 200 / 1000)
+    gen = long_stroke_2(100, 0, 0, 100, 200 / 1000)
     with open("t.txt", "w", encoding="utf-8") as tfile:
         for _ in range(200):
             tfile.write(next(gen).strip() + "\n")

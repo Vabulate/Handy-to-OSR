@@ -10,6 +10,7 @@ from patterns import (
     full_stroke_with_pitch_motion,
     full_stroke_with_roll_motion,
     long_stroke_1,
+    long_stroke_2,
 )
 from configuration import configuration
 from tcode_fire import TcodeFire
@@ -99,6 +100,9 @@ def set_state(key: str, value) -> None:
                 top, bottom, back, forth, state["speed"] / 1000
             ),
             long_stroke_1(
+                top, bottom, back, forth, state["speed"] / 1000
+            ),
+            long_stroke_2(
                 top, bottom, back, forth, state["speed"] / 1000
             ),
             # tempest_stroke_pitched_stroke(
