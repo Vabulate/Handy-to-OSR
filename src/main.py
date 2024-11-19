@@ -5,12 +5,7 @@ import time
 from mitmproxy import http
 from urllib.parse import urlparse, parse_qs
 
-from patterns import (
-    costumed_stroke_half_twist_costumed_surge_smooth_motion_generator,
-    full_stroke_with_pitch_motion,
-    full_stroke_with_roll_motion,
-    long_stroke_1,
-)
+import patterns as patterns_module
 from configuration import configuration
 from tcode_fire import TcodeFire
 
@@ -39,6 +34,11 @@ com = configuration["COM"]
 t1 = TcodeFire(com["port"], com["baudrate"])
 t1.start_thread()
 
+SELECTIVE_PATTERNS = []
+for name, flag in configuration["patterns"].items():
+    if flag:
+        print("selected - ", name)
+        SELECTIVE_PATTERNS.append(getattr(patterns_module, name))
 factors = configuration["factors"]
 
 
@@ -65,8 +65,6 @@ def set_state(key: str, value) -> None:
     """Sets the state for stroke, speed, or mode."""
     if key == "stroke":
         pass
-        # state["stroke"]["bottom"] = 0
-        # state["stroke"]["top"] = value
     elif key == "mode" and value == 0:
         state["speed"] = 0
 
@@ -88,23 +86,13 @@ def set_state(key: str, value) -> None:
         if state["speed"] == 0:
             return
         single_move_duration_ms = int(int(distance // (state["speed"] / 1000)))
-        patterns = [
-            costumed_stroke_half_twist_costumed_surge_smooth_motion_generator(
+
+        patterns = []
+        for selective_pattern in SELECTIVE_PATTERNS:
+            patterns.append(selective_pattern(top, bottom, back, forth, state["speed"] / 1000))
+        patterns.append(patterns_module.costumed_stroke_half_twist_costumed_surge_smooth_motion_generator(
                 top, bottom, back, forth, single_move_duration_ms * 2
-            ),
-            full_stroke_with_roll_motion(
-                top, bottom, back, forth, state["speed"] / 1000
-            ),
-            full_stroke_with_pitch_motion(
-                top, bottom, back, forth, state["speed"] / 1000
-            ),
-            long_stroke_1(
-                top, bottom, back, forth, state["speed"] / 1000
-            ),
-            # tempest_stroke_pitched_stroke(
-            #     top, bottom, back, forth, state["speed"]
-            # ),
-        ]
+            ))
 
         # TODO: buffer strokes
         pattern = random.choice(patterns)
