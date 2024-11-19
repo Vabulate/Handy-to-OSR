@@ -243,6 +243,86 @@ def full_stroke_with_pitch_motion(
         )
 
 
+def generate_wild_stroke_pattern(top, bottom, step_size_ms, linear_speed):
+    # Compute the total range and split it into two halves
+    mid = (top + bottom) // 2
+
+    # First half: Half the speed (double the stroke increment)
+    stroke_increment_half = max([int(step_size_ms * linear_speed / 2), 1])
+    first_half = list(range(top, mid, -1 * stroke_increment_half))
+
+    # Second half: Double the speed (half the stroke increment)
+    stroke_increment_double = max([int(step_size_ms * linear_speed * 2), 1])
+    second_half = list(range(mid, bottom, -1 * stroke_increment_double))
+
+    # Upward motion: First half + second half
+    upward = first_half + second_half
+
+    # Downward motion: Reverse of upward motion
+    downward = list(reversed(upward))
+
+    # Combine upward and downward to form a cycle
+    motion_pattern = cycle(upward + downward)
+
+    return motion_pattern
+
+
+def wild_stroke_and_pitch(
+    relative_top, relative_bottom, relative_back, relative_forth, linear_speed
+):
+    step_size_ms = 50
+
+    # Stroke
+    top = stroke_absolute_position(relative_top)
+    bottom = stroke_absolute_position(relative_bottom)
+
+    top_to_bottom = generate_wild_stroke_pattern(top, bottom, step_size_ms, linear_speed)
+
+    # PITCH
+    back = pitch_absolute_position(relative_back)
+    forth = pitch_absolute_position(relative_forth)
+
+    angular_speed_pitch = calculate_angular_velocity(abs(top - bottom), linear_speed)
+    # twist
+    t0 = twist_absolute_position(100)
+    t1 = twist_absolute_position(0)
+    twist_radius = abs(t0 - t1) + 1
+    angular_speed_twist = linear_speed / twist_radius
+    t = 0
+    yield TcodeLine(
+        [
+            TcodeInstruction("L0", next(top_to_bottom), INIT_TIME_DURATION_MS),
+            TcodeInstruction(
+                "R2",
+                get_orbital_position(angular_speed_pitch * t, back, forth, 1, -0.8),
+                INIT_TIME_DURATION_MS,
+            ),
+            TcodeInstruction(
+                "R0",
+                get_orbital_position(angular_speed_twist * t, t0, t1, -1, 0.1),
+                INIT_TIME_DURATION_MS,
+            ),
+        ]
+    )
+    while True:
+        t += step_size_ms
+        yield TcodeLine(
+            [
+                TcodeInstruction("L0", next(top_to_bottom), step_size_ms),
+                TcodeInstruction(
+                    "R2",
+                    get_orbital_position(angular_speed_pitch * t, back, forth, 1, -0.8),
+                    step_size_ms,
+                ),
+                TcodeInstruction(
+                    "R0",
+                    get_orbital_position(angular_speed_twist * t, t0, t1, -1, 0.1),
+                    step_size_ms,
+                ),
+            ]
+        )
+
+
 def long_stroke_1(
     relative_top, relative_bottom, relative_back, relative_forth, linear_speed
 ):
@@ -368,7 +448,7 @@ def long_stroke_2(
 
 
 if __name__ == "__main__":
-    gen = long_stroke_2(100, 0, 0, 100, 200 / 1000)
-    with open("t.txt", "w", encoding="utf-8") as tfile:
+    gen = wild_stroke_and_pitch(100, 0, 0, 100, 200 / 1000)
+    with open("t1.txt", "w", encoding="utf-8") as tfile:
         for _ in range(200):
             tfile.write(next(gen).strip() + "\n")
