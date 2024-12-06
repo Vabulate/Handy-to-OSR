@@ -95,13 +95,14 @@ def costumed_stroke_half_twist_costumed_surge_smooth_motion_generator(
     relative_bottom,
     relative_back,
     relative_forth,
-    total_duration,
+    speed,
 ):
+    top = stroke_absolute_position(relative_top)
+    bottom = stroke_absolute_position(relative_bottom)
+    total_duration = int(abs(top - bottom) / speed * 2)
     factor = int(total_duration // 2 * 0.1)
     duration_up = total_duration // 2 + random.randint(-1 * factor, factor + 1)
     duration_down = total_duration - duration_up
-    top = stroke_absolute_position(relative_top)
-    bottom = stroke_absolute_position(relative_bottom)
     valve_0 = valve_absolute_position(0)
     valve_1 = valve_absolute_position(100)
     while True:
@@ -125,7 +126,7 @@ def costumed_stroke_half_twist_costumed_surge_smooth_motion_generator(
                 TcodeInstruction("L0", bottom, duration_down),
                 TcodeInstruction(L1_R1, forth, duration_down),
                 TcodeInstruction("R0", 0, duration_down),
-                TcodeInstruction("A0", valve_0, duration_up),
+                TcodeInstruction("A0", valve_0, duration_down),
             ]
         )
 
@@ -294,7 +295,23 @@ def wild_stroke_and_pitch(
 
     # valve
 
-    open_to_close = cycle([0, 10, 0, 20, 0, 30, 0, 40, 20, 50, 30, 60, 0, 0, 0, 0, 0])
+    # open_to_close = cycle([0, 10,10,10,10,10 0, 20,20,20,20,20,20,20,20, 0, 30,30,30,30,30,30,30,30,30,30,30, 0, 40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40, 20, 20,20,20,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50, 30, 60,60,60,60,60,60,60,60,60,60,60,60,60,60,60,60,60,60,60,60,60, 0, 0, 0, 0, 0])
+    open_to_close = cycle(
+        [
+            # *[0, *[10] * 20],
+            *[0] * 10,
+            *[20] * 20,
+            *[0] * 10,
+            *[30] * 20,
+            *[0] * 10,
+            *[40] * 30,
+            *[10] * 10,
+            *[50] * 30,
+            *[30] * 10,
+            *[60] * 40,
+            *[0] * 20,
+        ]
+    )
     t = 0
     delay_time = INIT_TIME_DURATION_MS
 
@@ -413,7 +430,6 @@ def long_stroke_2(
         stroke_increment * ((abs(back - forth) // stroke_increment + 1) / stroke_size)
     )
     surge_increment = max([surge_increment, 1])
-    # print(back, )
     back_to_forth = list(range(forth, back - surge_increment, -1 * surge_increment))
     back_to_forth = cycle(back_to_forth + list(reversed(back_to_forth[0:-1])))
 
@@ -469,8 +485,154 @@ def long_stroke_2(
         duration = step_size_ms
 
 
+def long_stroke_3(
+    relative_top, relative_bottom, relative_back, relative_forth, linear_speed
+):
+    step_size_ms = 50
+
+    # Stroke
+    top = stroke_absolute_position(relative_top)
+    bottom = stroke_absolute_position(relative_bottom)
+    stroke_increment = max([int(step_size_ms * linear_speed), 1])
+    top_to_bottom = list(range(top, bottom - stroke_increment, -1 * stroke_increment))
+    stroke_size = len(top_to_bottom)
+    top_to_bottom = cycle(top_to_bottom + list(reversed(top_to_bottom[0:-1])))
+
+    # Surge
+    back = surge_absolute_position(relative_back)
+    forth = surge_absolute_position(relative_forth)
+    surge_increment = max([int(step_size_ms * linear_speed), 1])
+    back_to_forth = list(range(forth, back - surge_increment, -1 * surge_increment))
+    back_to_forth = cycle(back_to_forth + list(reversed(back_to_forth[0:-1])))
+    # valve
+    valve_0 = valve_absolute_position(0)
+    valve_100 = valve_absolute_position(100)
+    valve_increment = int(
+        stroke_increment
+        * ((abs(valve_0 - valve_100) // stroke_increment + 1) / stroke_size)
+    )
+    valve_increment = max([valve_increment, 1])
+    close_to_open = list(
+        range(valve_100, max([valve_0 - valve_increment, 0]), -1 * valve_increment)
+    )
+    close_to_open = cycle(close_to_open + list(reversed(close_to_open[0:-1])))
+
+    # pitch
+    pitch_back = pitch_absolute_position(100)
+    pitch_forth = pitch_absolute_position(0)
+
+    angular_speed_pitch = calculate_angular_velocity(abs(top - bottom), linear_speed)
+
+    # roll
+    roll_back = roll_absolute_position(60)
+    roll_forth = roll_absolute_position(30)
+
+    angular_speed_roll = calculate_angular_velocity(abs(top - bottom), linear_speed)
+    t = 0
+    duration = INIT_TIME_DURATION_MS
+    while True:
+        t += step_size_ms
+        yield TcodeLine(
+            [
+                TcodeInstruction("L0", next(top_to_bottom), duration),
+                TcodeInstruction("L1", next(back_to_forth), duration),
+                TcodeInstruction(
+                    "R1",
+                    get_orbital_position(
+                        angular_speed_roll * t, roll_back, roll_forth, 1.5, -0.1
+                    ),
+                    duration,
+                ),
+                TcodeInstruction(
+                    "R2",
+                    get_orbital_position(
+                        angular_speed_pitch * t, pitch_back, pitch_forth, 1, -0.1
+                    ),
+                    duration,
+                ),
+                TcodeInstruction("A0", next(close_to_open), duration),
+            ]
+        )
+        duration = step_size_ms
+
+
+def long_stroke_4(
+    relative_top, relative_bottom, relative_back, relative_forth, linear_speed
+):
+    step_size_ms = 50
+
+    # Stroke
+    top = stroke_absolute_position(relative_top)
+    bottom = stroke_absolute_position(relative_bottom)
+    stroke_increment = max([int(step_size_ms * linear_speed), 1])
+    top_to_bottom = list(range(top, bottom - stroke_increment, -1 * stroke_increment))
+    stroke_size = len(top_to_bottom)
+    top_to_bottom = cycle(top_to_bottom + list(reversed(top_to_bottom[0:-1])))
+
+    # Surge
+    # Surge
+    back = surge_absolute_position(relative_back)
+    forth = surge_absolute_position(relative_forth)
+    surge_increment = int(
+        stroke_increment * ((abs(back - forth) // stroke_increment + 1) / stroke_size)
+    )
+    surge_increment = max([surge_increment, 1])
+    back_to_forth = list(range(forth, back - surge_increment, -1 * surge_increment))
+    back_to_forth = cycle(back_to_forth + list(reversed(back_to_forth[0:-1])))
+    # valve
+    valve_0 = valve_absolute_position(0)
+    valve_100 = valve_absolute_position(100)
+    valve_increment = int(
+        stroke_increment
+        * ((abs(valve_0 - valve_100) // stroke_increment + 1) / stroke_size)
+    )
+    valve_increment = max([valve_increment, 1])
+    close_to_open = list(
+        range(valve_100, max([valve_0 - valve_increment, 0]), -1 * valve_increment)
+    )
+    close_to_open = cycle(close_to_open + list(reversed(close_to_open[0:-1])))
+
+    # pitch
+    pitch_back = pitch_absolute_position(100)
+    pitch_forth = pitch_absolute_position(0)
+
+    angular_speed_pitch = calculate_angular_velocity(abs(top - bottom), linear_speed)
+
+    # roll
+    roll_back = roll_absolute_position(60)
+    roll_forth = roll_absolute_position(30)
+
+    angular_speed_roll = calculate_angular_velocity(abs(top - bottom), linear_speed)
+    t = 0
+    duration = INIT_TIME_DURATION_MS
+    while True:
+        t += step_size_ms
+        yield TcodeLine(
+            [
+                TcodeInstruction("L0", next(top_to_bottom), duration),
+                TcodeInstruction("L1", next(back_to_forth), duration),
+                TcodeInstruction(
+                    "R1",
+                    get_orbital_position(
+                        angular_speed_roll * t, roll_back, roll_forth, 1.5, 0.5
+                    ),
+                    duration,
+                ),
+                TcodeInstruction(
+                    "R2",
+                    get_orbital_position(
+                        angular_speed_pitch * t, pitch_back, pitch_forth, 0.5, 1
+                    ),
+                    duration,
+                ),
+                TcodeInstruction("A0", next(close_to_open), duration),
+            ]
+        )
+        duration = step_size_ms
+
+
 if __name__ == "__main__":
-    gen = long_stroke_2(100, 0, 0, 100, 200 / 1000)
+    gen = long_stroke_4(100, 0, 0, 100, 140 / 1000)
     with open("t1.txt", "w", encoding="utf-8") as tfile:
         for _ in range(200):
             tfile.write(next(gen).strip() + "\n")
