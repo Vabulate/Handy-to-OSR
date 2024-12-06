@@ -1,8 +1,8 @@
 configs:
   ranges:
     stroke:
-      min: 2
-      max: 85
+      min: 7
+      max: 68
     surge:
       min: 30
       max: 60
@@ -13,8 +13,8 @@ configs:
       min: 0
       max: 99
     roll:
-      min: 20
-      max: 80
+      min: 30
+      max: 60
     pitch:
       min: 30
       max: 60
@@ -26,11 +26,13 @@ configs:
     baudrate: 115200
     debug: true
   factors:
-    velocity_factor: 2.1
-    speed_factor: 2.1
+    velocity_factor: 1.4
+    speed_factor: 1.4
   patterns:
     full_stroke_with_roll_motion: true
     full_stroke_with_pitch_motion: true
     wild_stroke_and_pitch: true
     long_stroke_1: true
     long_stroke_2: true
+    long_stroke_3: true
+    long_stroke_4: true

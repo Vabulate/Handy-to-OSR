@@ -82,16 +82,14 @@ def set_state(key: str, value) -> None:
         top = int(state["stroke"]["top"])
         back = random.randint(0, 50)
         forth = random.randint(50, 100)
-        distance = top - bottom
         if state["speed"] == 0:
             return
-        single_move_duration_ms = int(int(distance // (state["speed"] / 1000)))
 
         patterns = []
         for selective_pattern in SELECTIVE_PATTERNS:
             patterns.append(selective_pattern(top, bottom, back, forth, state["speed"] / 1000))
         patterns.append(patterns_module.costumed_stroke_half_twist_costumed_surge_smooth_motion_generator(
-                top, bottom, back, forth, single_move_duration_ms * 2
+                top, bottom, back, forth, state["speed"] / 1000
             ))
 
         # TODO: buffer strokes
